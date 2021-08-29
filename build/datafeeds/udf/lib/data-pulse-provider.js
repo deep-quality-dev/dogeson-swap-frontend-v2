@@ -96,17 +96,32 @@ var DataPulseProvider = /** @class */ (function () {
 export { DataPulseProvider };
 function periodLengthSeconds(resolution, requiredPeriodsCount) {
     var daysCount = 0;
-    if (resolution === 'D' || resolution === '1D') {
+	 if (resolution === '1' || resolution === '1') {
         daysCount = requiredPeriodsCount;
+	 }
+    else (resolution === '5' || resolution === '5') {
+        daysCount = 5 * requiredPeriodsCount;
+	 }
+    else (resolution === '15' || resolution === '15') {
+        daysCount = 15 * requiredPeriodsCount;
+	 }
+    else (resolution === '30' || resolution === '30') {
+        daysCount = 30 * requiredPeriodsCount;
+	 } 
+	 else if (resolution === '60' || resolution === '60') {
+        daysCount = 60 * requiredPeriodsCount;
+	 }
+    else (resolution === 'D' || resolution === '1D') {
+        daysCount = 24 * 60* 60 * requiredPeriodsCount;
     }
     else if (resolution === 'M' || resolution === '1M') {
-        daysCount = 31 * requiredPeriodsCount;
+        daysCount = 43800 * requiredPeriodsCount;
     }
     else if (resolution === 'W' || resolution === '1W') {
-        daysCount = 7 * requiredPeriodsCount;
+        daysCount = 10080 * requiredPeriodsCount;
     }
     else {
         daysCount = requiredPeriodsCount * parseInt(resolution) / (24 * 60);
     }
-    return daysCount * 24 * 60 * 60;
+    return daysCount * 60;
 }
