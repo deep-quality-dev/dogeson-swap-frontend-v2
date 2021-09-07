@@ -1,41 +1,44 @@
+import React, { useCallback, useState } from 'react'
+import styled from 'styled-components'
 import { BigNumber } from '@ethersproject/bignumber'
 import { TransactionResponse } from '@ethersproject/providers'
 import { Currency, currencyEquals, ETHER, TokenAmount, WETH } from '@pancakeswap/sdk'
-import { AddIcon, Button, Flex, Message, Text, useModal } from '@pancakeswap/uikit'
-import UnsupportedCurrencyFooter from 'components/UnsupportedCurrencyFooter'
-import { useTranslation } from 'contexts/Localization'
+import { Button, Text, Flex, AddIcon, CardBody, Message, useModal } from '@pancakeswap/uikit'
 // import { RouteComponentProps } from 'react-router-dom'
 import { useIsTransactionUnsupported } from 'hooks/Trades'
+import { useTranslation } from 'contexts/Localization'
+import UnsupportedCurrencyFooter from 'components/UnsupportedCurrencyFooter'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
-import React, { useCallback, useState } from 'react'
-import styled from 'styled-components'
-import { AppHeader } from '../../components/App'
 import { LightCard } from '../../components/Card'
-import ConnectWalletButton from '../../components/ConnectWalletButton'
-import CurrencyInputPanel from '../../components/CurrencyInputPanel'
 import { AutoColumn, ColumnCenter } from '../../components/Layout/Column'
-import Row, { AutoRow, RowBetween } from '../../components/Layout/Row'
-import Dots from '../../components/Loader/Dots'
-import { DoubleCurrencyLogo } from '../../components/Logo'
-import { MinimalPositionCard } from '../../components/PositionCard'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
+import CurrencyInputPanel from '../../components/CurrencyInputPanel'
+import { DoubleCurrencyLogo } from '../../components/Logo'
+import { AppHeader, AppBody } from '../../components/App'
+import { MinimalPositionCard } from '../../components/PositionCard'
+import Row, { AutoRow, RowBetween } from '../../components/Layout/Row'
+import ConnectWalletButton from '../../components/ConnectWalletButton'
+
+// import { ROUTER_ADDRESS, PANCAKE_ROUTER_ADDRESS } from '../../config/constants'
+import { PairState } from '../../hooks/usePairs'
 import { useCurrency } from '../../hooks/Tokens'
 import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
 import { useRouterAddress } from '../../hooks/useContract'
-// import { ROUTER_ADDRESS, PANCAKE_ROUTER_ADDRESS } from '../../config/constants'
-import { PairState } from '../../hooks/usePairs'
 import useTransactionDeadline from '../../hooks/useTransactionDeadline'
-import { useLiquidityPairA, useLiquidityPairB, useSetRouterType } from '../../state/application/hooks'
 import { Field } from '../../state/mint/actions'
 import { useDerivedMintInfo, useMintActionHandlers, useMintState } from '../../state/mint/hooks'
+
+import { useSetRouterType, useLiquidityPairA, useLiquidityPairB } from '../../state/application/hooks'
 import { useTransactionAdder } from '../../state/transactions/hooks'
 import { useIsExpertMode, useUserSlippageTolerance } from '../../state/user/hooks'
 import { calculateGasMargin, calculateSlippageAmount, getRouterContract } from '../../utils'
-import { currencyId } from '../../utils/currencyId'
 import { maxAmountSpend } from '../../utils/maxAmountSpend'
 import { wrappedCurrency } from '../../utils/wrappedCurrency'
+import Dots from '../../components/Loader/Dots'
 import ConfirmAddModalBottom from './ConfirmAddModalBottom'
+import { currencyId } from '../../utils/currencyId'
 import PoolPriceBar from './PoolPriceBar'
+import Page from '../Page'
 
 const ArrowContainer = styled(ColumnCenter)`
   width: 32px;
@@ -50,9 +53,9 @@ const ArrowContainer = styled(ColumnCenter)`
 
 export default function AddLiquidityWidget({
   currencyIdA,
-  currencyIdB,
+  currencyIdB
 }: {
-  currencyIdA?: string
+  currencyIdA?: string;
   currencyIdB?: string
 }) {
   const { account, chainId, library } = useActiveWeb3React()
@@ -61,8 +64,8 @@ export default function AddLiquidityWidget({
   const { liquidityPairA, setLiquidityPairA } = useLiquidityPairA()
   const { liquidityPairB, setLiquidityPairB } = useLiquidityPairB()
 
-  const [currencyA1, setCurrencyA1] = useState(liquidityPairA || 'ETH')
-  const [currencyB1, setCurrencyB1] = useState(liquidityPairB || 'ETH')
+  const [ currencyA1, setCurrencyA1 ] = useState(liquidityPairA || 'ETH')
+  const [ currencyB1, setCurrencyB1 ] = useState(liquidityPairB || 'ETH')
   const { t } = useTranslation()
 
   const currencyA = useCurrency(currencyA1)
@@ -132,7 +135,7 @@ export default function AddLiquidityWidget({
   )
 
   const routerAddress = useRouterAddress()
-
+  
   // check whether the user has approved the router on the tokens
   const [approvalA, approveACallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_A], routerAddress)
   const [approvalB, approveBCallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_B], routerAddress)

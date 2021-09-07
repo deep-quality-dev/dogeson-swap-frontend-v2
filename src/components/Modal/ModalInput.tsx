@@ -1,14 +1,15 @@
-import { Button, Flex, Input, InputProps, Link, Text } from '@pancakeswap/uikit'
-import { BigNumber } from 'bignumber.js'
-import { useTranslation } from 'contexts/Localization'
 import React from 'react'
 import styled from 'styled-components'
+import { Text, Button, Input, InputProps, Flex, Link } from '@pancakeswap/uikit'
+import { useTranslation } from 'contexts/Localization'
+import { BigNumber } from 'bignumber.js'
 
 interface ModalInputProps {
   max: string
   symbol: string
   onSelectMax?: () => void
   onChange: (e: React.FormEvent<HTMLInputElement>) => void
+  placeholder?: string
   value: string
   addLiquidityUrl?: string
   inputTitle?: string
@@ -62,6 +63,7 @@ const ModalInput: React.FC<ModalInputProps> = ({
   symbol,
   onChange,
   onSelectMax,
+  placeholder,
   value,
   addLiquidityUrl,
   inputTitle,

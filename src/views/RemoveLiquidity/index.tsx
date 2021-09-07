@@ -1,39 +1,42 @@
-import { BigNumber } from '@ethersproject/bignumber'
+import React, { useCallback, useMemo, useState } from 'react'
+import styled from 'styled-components'
 import { splitSignature } from '@ethersproject/bytes'
 import { Contract } from '@ethersproject/contracts'
 import { TransactionResponse } from '@ethersproject/providers'
 import { Currency, currencyEquals, ETHER, Percent, WETH } from '@pancakeswap/sdk'
-import { AddIcon, ArrowDownIcon, Box, Button, CardBody, Flex, Slider, Text, useModal } from '@pancakeswap/uikit'
-import { useTranslation } from 'contexts/Localization'
-import React, { useCallback, useMemo, useState } from 'react'
+import { Button, Text, AddIcon, ArrowDownIcon, CardBody, Slider, Box, Flex, useModal } from '@pancakeswap/uikit'
 import { RouteComponentProps } from 'react-router'
-import styled from 'styled-components'
-import { AppBody, AppHeader } from '../../components/App'
-import { LightGreyCard } from '../../components/Card'
-import ConnectWalletButton from '../../components/ConnectWalletButton'
-import CurrencyInputPanel from '../../components/CurrencyInputPanel'
+import { BigNumber } from '@ethersproject/bignumber'
+import { useTranslation } from 'contexts/Localization'
 import { AutoColumn, ColumnCenter } from '../../components/Layout/Column'
-import { RowBetween, RowFixed } from '../../components/Layout/Row'
-import StyledInternalLink from '../../components/Links'
-import Dots from '../../components/Loader/Dots'
-import { CurrencyLogo, DoubleCurrencyLogo } from '../../components/Logo'
-import { MinimalPositionCard } from '../../components/PositionCard'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
-import { useCurrency } from '../../hooks/Tokens'
+import CurrencyInputPanel from '../../components/CurrencyInputPanel'
+import { MinimalPositionCard } from '../../components/PositionCard'
+import { AppHeader, AppBody } from '../../components/App'
+import { RowBetween, RowFixed } from '../../components/Layout/Row'
+import ConnectWalletButton from '../../components/ConnectWalletButton'
+import { LightGreyCard } from '../../components/Card'
+
+import { CurrencyLogo, DoubleCurrencyLogo } from '../../components/Logo'
 // import { ROUTER_ADDRESS, PANCAKE_ROUTER_ADDRESS } from '../../config/constants'
 import useActiveWeb3React from '../../hooks/useActiveWeb3React'
-import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
+import { useCurrency } from '../../hooks/Tokens'
 import { usePairContract, useRouterAddress } from '../../hooks/useContract'
-import useDebouncedChangeHandler from '../../hooks/useDebouncedChangeHandler'
 import useTransactionDeadline from '../../hooks/useTransactionDeadline'
+
 import { useSetRouterType } from '../../state/application/hooks'
-import { Field } from '../../state/burn/actions'
-import { useBurnActionHandlers, useBurnState, useDerivedBurnInfo } from '../../state/burn/hooks'
 import { useTransactionAdder } from '../../state/transactions/hooks'
-import { useUserSlippageTolerance } from '../../state/user/hooks'
+import StyledInternalLink from '../../components/Links'
 import { calculateGasMargin, calculateSlippageAmount, getRouterContract } from '../../utils'
 import { currencyId } from '../../utils/currencyId'
+import useDebouncedChangeHandler from '../../hooks/useDebouncedChangeHandler'
 import { wrappedCurrency } from '../../utils/wrappedCurrency'
+import { useApproveCallback, ApprovalState } from '../../hooks/useApproveCallback'
+import Dots from '../../components/Loader/Dots'
+import { useBurnActionHandlers, useDerivedBurnInfo, useBurnState } from '../../state/burn/hooks'
+
+import { Field } from '../../state/burn/actions'
+import { useUserSlippageTolerance } from '../../state/user/hooks'
 import Page from '../Page'
 
 const BorderCard = styled.div`
@@ -444,7 +447,7 @@ export default function RemoveLiquidity({
       customOnDismiss={handleDismissConfirmation}
       attemptingTxn={attemptingTxn}
       hash={txHash || ''}
-      content={() => <ConfirmationModalContent topContent={() => modalHeader()} bottomContent={() => modalBottom} />}
+      content={() => <ConfirmationModalContent topContent={() => modalHeader()} bottomContent={() => modalBottom()} />}
       pendingText={pendingText}
     />,
     true,

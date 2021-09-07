@@ -1,29 +1,57 @@
 /* eslint-disable */
-import { ReactComponent as UpDownArrow } from 'assets/svg/icon/UpDownArrow.svg'
-import axios from 'axios'
-import TransactionNav from 'components/TransactionNav'
 import * as React from 'react'
-import { useSelector } from 'react-redux'
 import styled from 'styled-components'
-import {
-  ChartingLibraryWidgetOptions,
-  IChartingLibraryWidget,
-  LanguageCode,
-  ResolutionString,
-  widget,
-} from '../../../charting_library'
-import { AppState } from '../../../state'
-import { isAddress } from '../../../utils'
-import { makeApiRequest1 } from './helpers'
+import TransactionNav from 'components/TransactionNav'
 import './index.css'
+import {
+  widget,
+  ChartingLibraryWidgetOptions,
+  LanguageCode,
+  IChartingLibraryWidget,
+  ResolutionString,
+} from '../../../charting_library'
+import axios from 'axios'
+import { makeApiRequest, generateSymbol, makeApiRequest1 } from './helpers'
+import { useSelector } from 'react-redux'
+import { ReactComponent as UpDownArrow } from 'assets/svg/icon/UpDownArrow.svg'
+import { AppDispatch, AppState } from '../../../state'
+import { isAddress } from '../../../utils'
 
 const UpDownArrowBox = styled.div`
   width: 100%;
   text-align: center;
+  position: relative;
+  margin-top: 8px;
+`
+
+const ArrowWrapper = styled.div`
+  margin: auto;
+  width: 0;
+  cursor: row-resize;
   & svg {
     width: 14px;
     height: 16px;
   }
+  ${({ theme }) => theme.mediaQueries.sm} {
+    margin-top: 4px;
+  }
+`
+
+const TransactionNavWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 0;
+  ${({ theme }) => theme.mediaQueries.md} {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 0;
+  }
+`
+
+const ChartContainer = styled.div<{ height: number }> `
+  position: relative;
+  height: ${(props) => props.height}px;
 `
 
 // eslint-disable-next-line import/extensions
@@ -68,8 +96,10 @@ function getLanguageFromURL(): LanguageCode | null {
 export const TVChartContainer: React.FC<Partial<ChartContainerProps>> = () => {
   const input = useSelector<AppState, AppState['inputReducer']>((state) => state.inputReducer.input)
   const routerVersion = useSelector<AppState, AppState['inputReducer']>((state) => state.inputReducer.routerVersion)
-
   const result = isAddress(input)
+  const draggableArrow = React.useRef<any>(null)
+  const [ chartHeight, setChartHeight ] = React.useState(550)
+  const [ dragPos, setDragPos ] = React.useState(0)
 
   const [tokendetails, setTokenDetails] = React.useState({
     name: 'PancakeSwap Token',
@@ -78,10 +108,10 @@ export const TVChartContainer: React.FC<Partial<ChartContainerProps>> = () => {
     version: 'Pancake ' + routerVersion,
   })
 
-  const lastBarsCache = new Map()
+  // const lastBarsCache = new Map()
 
   const configurationData = {
-    supported_resolutions: ['1H', '1D', '1W', '1M'],
+    supported_resolutions: ['1', '5', '10', '15', '30', '1H', '1D', '1W', '1M'],
     exchanges: [
       {
         value: 'Bitfinex',
@@ -142,7 +172,7 @@ export const TVChartContainer: React.FC<Partial<ChartContainerProps>> = () => {
       //     onResolveErrorCallback('cannot resolve symbol');
       //     return;
       // }
-      const response = await axios.get(`https://api.sphynxswap.finance/tokenDetails/${input}`)
+      const response = await axios.get(`https://thesphynx.co/api/tokenDetails/${input}`)
       setTokenDetails(response.data)
 
       const version =
@@ -160,8 +190,8 @@ export const TVChartContainer: React.FC<Partial<ChartContainerProps>> = () => {
         exchange: version,
         minmov: 1,
         pricescale: 100,
-        has_intraday: false,
-        has_no_volume: true,
+        has_intraday: true,
+        has_no_volume: false,
         has_weekly_and_monthly: false,
         supported_resolutions: configurationData.supported_resolutions,
         volume_precision: 2,
@@ -192,7 +222,7 @@ export const TVChartContainer: React.FC<Partial<ChartContainerProps>> = () => {
       // };
 
       try {
-        const data = await makeApiRequest1(input, routerVersion)
+        const data = await makeApiRequest1(input, routerVersion, resolution)
         if (result) {
           // setLoader(true);
           if (!firstDataRequest) {
@@ -208,7 +238,7 @@ export const TVChartContainer: React.FC<Partial<ChartContainerProps>> = () => {
         // if(data.data.data){
         data.map((bar: any, i: any) => {
           const obj = {
-            time: new Date(bar.time).toString(),
+            time: new Date(bar.time).getTime(),
             low: bar.low * bar.baseLow,
             high: bar.high * bar.baseHigh,
             open: bar.open * bar.baseOpen,
@@ -227,9 +257,9 @@ export const TVChartContainer: React.FC<Partial<ChartContainerProps>> = () => {
         // eslint-disable-next-line no-console
 
         // if (firstDataRequest) {
-        lastBarsCache.set(symbolInfo.full_name, {
-          ...bars[bars.length - 1],
-        })
+        // lastBarsCache.set(symbolInfo.full_name, {
+        //   ...bars[bars.length - 1],
+        // })
         // setLoader(false);
         // }
         onHistoryCallback(bars, {
@@ -307,6 +337,18 @@ export const TVChartContainer: React.FC<Partial<ChartContainerProps>> = () => {
     getWidget()
   }, [input])
 
+  const handleDragStart = (e) => {
+    setDragPos(e.pageY)
+  }
+
+  const handleDrag = (e) => {
+    if (chartHeight + e.pageY - dragPos > 550) {
+      setChartHeight(chartHeight + e.pageY - dragPos)
+    } else {
+      setChartHeight(550)
+    }
+  }
+
   return (
     <div className={'TVChartContainer'}>
       {/* {loader ?
@@ -321,14 +363,18 @@ export const TVChartContainer: React.FC<Partial<ChartContainerProps>> = () => {
           </div>
           : ""
         } */}
-      <div id={ChartContainerProps.containerId} style={{ height: '100%', paddingBottom: '10px' }} />
+      <ChartContainer height={chartHeight}>
+        <div id={ChartContainerProps.containerId} style={{ height: '100%', paddingBottom: '10px' }} />
+      </ChartContainer>
       {/* <div style={{ height: '10px' }}>&nbsp;</div> */}
       <UpDownArrowBox>
-        <UpDownArrow />
+        <ArrowWrapper ref={draggableArrow} draggable='true' onDragStart={e => handleDragStart(e)} onDragOver={e => handleDrag(e)}>
+          <UpDownArrow />
+        </ArrowWrapper>
+        <TransactionNavWrapper>
+          <TransactionNav />
+        </TransactionNavWrapper>
       </UpDownArrowBox>
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
-        <TransactionNav />
-      </div>
     </div>
   )
 }

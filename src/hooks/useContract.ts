@@ -1,44 +1,45 @@
-// Imports below migrated from Exchange useContract.ts
-import { Contract } from '@ethersproject/contracts'
-import { ChainId, RouterType, WETH } from '@pancakeswap/sdk'
-import { abi as IUniswapV2PairABI } from '@uniswap/v2-core/build/IUniswapV2Pair.json'
-import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useMemo } from 'react'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import {
   getBep20Contract,
-  getBunnyFactoryContract,
-  getBunnySpecialCakeVaultContract,
-  getBunnySpecialContract,
-  getBunnySpecialPredictionContract,
   getCakeContract,
-  getCakeVaultContract,
-  getChainlinkOracleContract,
-  getClaimRefundContract,
-  getEasterNftContract,
-  getErc721Contract,
-  getFarmAuctionContract,
+  getBunnyFactoryContract,
+  getBunnySpecialContract,
+  getPancakeRabbitContract,
+  getProfileContract,
   getIfoV1Contract,
   getIfoV2Contract,
-  getLotteryV2Contract,
   getMasterchefContract,
-  getPancakeRabbitContract,
   getPointCenterIfoContract,
-  getPredictionsContract,
-  getProfileContract,
   getSouschefContract,
-  getSouschefV2Contract,
+  getClaimRefundContract,
   getTradingCompetitionContract,
+  getEasterNftContract,
+  getErc721Contract,
+  getCakeVaultContract,
+  getPredictionsContract,
+  getChainlinkOracleContract,
+  getSouschefV2Contract,
+  getLotteryV2Contract,
+  getBunnySpecialCakeVaultContract,
+  getBunnySpecialPredictionContract,
+  getFarmAuctionContract,
 } from 'utils/contractHelpers'
+
+// Imports below migrated from Exchange useContract.ts
+import { Contract } from '@ethersproject/contracts'
+import { ChainId, WETH, RouterType } from '@pancakeswap/sdk'
+import { abi as IUniswapV2PairABI } from '@uniswap/v2-core/build/IUniswapV2Pair.json'
 import ENS_PUBLIC_RESOLVER_ABI from '../config/abi/ens-public-resolver.json'
 import ENS_ABI from '../config/abi/ens-registrar.json'
 import { ERC20_BYTES32_ABI } from '../config/abi/erc20'
 import ERC20_ABI from '../config/abi/erc20.json'
 import WETH_ABI from '../config/abi/weth.json'
-import { PANCAKE_ROUTER_ADDRESS, ROUTER_ADDRESS } from '../config/constants'
 import { MULTICALL_ABI, MULTICALL_NETWORKS } from '../config/constants/multicall'
-import { PANCAKE_FACTORY_ABI, PANCAKE_FACTORY_ADDRESSES } from '../config/constants/pancakeswap'
-import { useSetRouterType } from '../state/application/hooks'
+import { PANCAKE_FACTORY_ADDRESSES, PANCAKE_FACTORY_ABI } from '../config/constants/pancakeswap'
+import { ROUTER_ADDRESS, PANCAKE_ROUTER_ADDRESS } from '../config/constants'
 import { getContract } from '../utils'
+import { useSetRouterType } from '../state/application/hooks'
 
 /**
  * Helper hooks to get specific contracts (by ABI)

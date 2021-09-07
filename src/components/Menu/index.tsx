@@ -142,11 +142,12 @@ const MenuItem = styled.a`
   // height: 56px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 12px 24px;
   border-radius: 10px;
   text-decoration: none !important;
   & p {
-    margin-left: 12px;
+    width: calc(100% - 32px);
   }
   &:hover {
     background: #8B2A9B;
@@ -232,7 +233,7 @@ const Menu = (props) => {
 
   const fetchData = async () => {
     if (account) {
-      // const g= await axios.get('https://api.sphynxswap.finance/price/0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82');
+      // const g= await axios.get('https://thesphynx.co/api/price/0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82');
       // // eslint-disable-next-line no-console
       // console.log("price============>",g);
 
@@ -247,7 +248,7 @@ const Menu = (props) => {
 
         // for await (const elem of queryResult.data.data.ethereum.address[0].balances) {
           const promises = balances.map(elem => {
-            return axios.get(`https://api.sphynxswap.finance/price/${elem.currency.address === '-' ? '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c' : elem.currency.address}`);
+            return axios.get(`https://thesphynx.co/api/price/${elem.currency.address === '-' ? '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c' : elem.currency.address}`);
           })
           const prices : any = await Promise.all(promises);
           let i = 0;
@@ -319,7 +320,7 @@ const Menu = (props) => {
 
   return (
     <MenuWrapper toggled={menuToggled}>
-      <Link external href="https://sphynxtoken.co"><img src={MainLogo} alt='Main Logo' /></Link>
+      <Link external href="https://thesphynx.co"><img src={MainLogo} alt='Main Logo' /></Link>
       <MenuIconWrapper>
         {!menuToggled && <span>Main Menu</span>
         }
@@ -377,7 +378,7 @@ const Menu = (props) => {
               <Link external href="https://twitter.com/sphynxswap?s=21">
                 <TwitterIcon />
               </Link>
-              <Link external href="https://www.sphynxtoken.co">
+              <Link external href="https://www.thesphynx.co">
                 <SocialIcon2 />
               </Link>
               <Link external href="https://t.me/sphynxswap">

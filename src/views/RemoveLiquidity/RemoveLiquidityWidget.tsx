@@ -1,39 +1,43 @@
-/* eslint-disable react/jsx-no-bind */
-import { BigNumber } from '@ethersproject/bignumber'
+import React, { useCallback, useMemo, useState } from 'react'
+import styled from 'styled-components'
 import { splitSignature } from '@ethersproject/bytes'
 import { Contract } from '@ethersproject/contracts'
 import { TransactionResponse } from '@ethersproject/providers'
 import { Currency, currencyEquals, ETHER, Percent, WETH } from '@pancakeswap/sdk'
-import { AddIcon, ArrowDownIcon, Box, Button, Flex, Slider, Text, useModal } from '@pancakeswap/uikit'
+import { Button, Text, AddIcon, ArrowDownIcon, CardBody, Slider, Box, Flex, useModal } from '@pancakeswap/uikit'
+import { RouteComponentProps } from 'react-router'
+import { BigNumber } from '@ethersproject/bignumber'
 import { useTranslation } from 'contexts/Localization'
-import React, { useCallback, useMemo, useState } from 'react'
-import styled from 'styled-components'
-import { AppHeader } from '../../components/App'
-import { LightGreyCard } from '../../components/Card'
-import ConnectWalletButton from '../../components/ConnectWalletButton'
-import CurrencyInputPanel from '../../components/CurrencyInputPanel'
 import { AutoColumn, ColumnCenter } from '../../components/Layout/Column'
-import { AutoRow, RowBetween, RowFixed } from '../../components/Layout/Row'
-import StyledInternalLink from '../../components/Links'
-import Dots from '../../components/Loader/Dots'
-import { CurrencyLogo, DoubleCurrencyLogo } from '../../components/Logo'
-import { MinimalPositionCard } from '../../components/PositionCard'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
-import { useCurrency } from '../../hooks/Tokens'
+import CurrencyInputPanel from '../../components/CurrencyInputPanel'
+import { MinimalPositionCard } from '../../components/PositionCard'
+import { AppHeader, AppBody } from '../../components/App'
+import { AutoRow, RowBetween, RowFixed } from '../../components/Layout/Row'
+import ConnectWalletButton from '../../components/ConnectWalletButton'
+import { LightGreyCard } from '../../components/Card'
+
+import { CurrencyLogo, DoubleCurrencyLogo } from '../../components/Logo'
 // import { ROUTER_ADDRESS, PANCAKE_ROUTER_ADDRESS } from '../../config/constants'
 import useActiveWeb3React from '../../hooks/useActiveWeb3React'
-import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
+import { useCurrency } from '../../hooks/Tokens'
 import { usePairContract, useRouterAddress } from '../../hooks/useContract'
-import useDebouncedChangeHandler from '../../hooks/useDebouncedChangeHandler'
 import useTransactionDeadline from '../../hooks/useTransactionDeadline'
-import { useLiquidityPairA, useLiquidityPairB, useSetRouterType } from '../../state/application/hooks'
-import { Field } from '../../state/burn/actions'
-import { useBurnActionHandlers, useBurnState, useDerivedBurnInfo } from '../../state/burn/hooks'
+
+import { useSetRouterType, useLiquidityPairA, useLiquidityPairB } from '../../state/application/hooks'
 import { useTransactionAdder } from '../../state/transactions/hooks'
-import { useUserSlippageTolerance } from '../../state/user/hooks'
+import StyledInternalLink from '../../components/Links'
 import { calculateGasMargin, calculateSlippageAmount, getRouterContract } from '../../utils'
 import { currencyId } from '../../utils/currencyId'
+import useDebouncedChangeHandler from '../../hooks/useDebouncedChangeHandler'
 import { wrappedCurrency } from '../../utils/wrappedCurrency'
+import { useApproveCallback, ApprovalState } from '../../hooks/useApproveCallback'
+import Dots from '../../components/Loader/Dots'
+import { useBurnActionHandlers, useDerivedBurnInfo, useBurnState } from '../../state/burn/hooks'
+
+import { Field } from '../../state/burn/actions'
+import { useUserSlippageTolerance } from '../../state/user/hooks'
+import Page from '../Page'
 
 const ArrowContainer = styled(ColumnCenter)`
   width: 32px;
@@ -54,21 +58,22 @@ const BorderCard = styled.div`
 
 export default function RemoveLiquidityWidget({
   currencyIdA,
-  currencyIdB,
+  currencyIdB
 }: {
-  currencyIdA?: string
+  currencyIdA?: string;
   currencyIdB?: string
 }) {
+  
   const { liquidityPairA, setLiquidityPairA } = useLiquidityPairA()
   const { liquidityPairB, setLiquidityPairB } = useLiquidityPairB()
 
-  const [currencyA1, setCurrencyA1] = useState(liquidityPairA || 'ETH')
-  const [currencyB1, setCurrencyB1] = useState(liquidityPairB || 'ETH')
+  const [ currencyA1, setCurrencyA1 ] = useState(liquidityPairA || 'ETH')
+  const [ currencyB1, setCurrencyB1 ] = useState(liquidityPairB || 'ETH')
 
   console.log('currencyA1=', currencyA1, ', currencyB1=', currencyB1)
 
   const [currencyA, currencyB] = [useCurrency(currencyA1) ?? undefined, useCurrency(currencyB1) ?? undefined]
-
+  
   const { account, chainId, library } = useActiveWeb3React()
   const { routerType } = useSetRouterType()
 
@@ -366,13 +371,11 @@ export default function RemoveLiquidityWidget({
       </AutoColumn>
     )
   }
-  /* eslint-disable react/jsx-no-bind */
 
   function modalBottom() {
     return (
       <>
         <RowBetween>
-          z
           <Text>
             {t('%assetA%/%assetB% Burned', { assetA: currencyA?.symbol ?? '', assetB: currencyB?.symbol ?? '' })}
           </Text>
@@ -397,7 +400,7 @@ export default function RemoveLiquidityWidget({
             </RowBetween>
           </>
         )}
-        <Button disabled={!(approval === ApprovalState.APPROVED || signatureData !== null)} onClick={onRemove}>
+        <Button disabled={!(approval === ApprovalState.APPROVED || signatureData !== null)} onClick={() => onRemove()}>
           {t('Confirm')}
         </Button>
       </>
@@ -472,7 +475,7 @@ export default function RemoveLiquidityWidget({
       customOnDismiss={handleDismissConfirmation}
       attemptingTxn={attemptingTxn}
       hash={txHash || ''}
-      content={() => <ConfirmationModalContent topContent={modalHeader} bottomContent={modalBottom} />}
+      content={() => <ConfirmationModalContent topContent={() => modalHeader()} bottomContent={() => modalBottom()} />}
       pendingText={pendingText}
     />,
     true,
@@ -604,7 +607,7 @@ export default function RemoveLiquidityWidget({
                 <AutoColumn justify="space-between">
                   <AutoRow justify="center" style={{ padding: '0 1rem' }}>
                     <ArrowContainer>
-                      <ArrowDownIcon width="24px" my="16px" />
+                    <ArrowDownIcon width="24px" my="16px" />
                     </ArrowContainer>
                   </AutoRow>
                 </AutoColumn>
@@ -672,7 +675,7 @@ export default function RemoveLiquidityWidget({
               <RowBetween>
                 <Button
                   variant={approval === ApprovalState.APPROVED || signatureData !== null ? 'success' : 'primary'}
-                  onClick={onAttemptToApprove}
+                  onClick={() => onAttemptToApprove()}
                   disabled={approval !== ApprovalState.NOT_APPROVED || signatureData !== null}
                   width="100%"
                   mr="0.5rem"
