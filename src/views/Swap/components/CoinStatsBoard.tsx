@@ -1,12 +1,11 @@
 /* eslint-disable no-console */
-import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux';
-import ReactLoading from 'react-loading';
-import {utils} from "ethers";
-import axios from 'axios';
-import styled from 'styled-components'
-import { Text, Flex } from '@pancakeswap/uikit'
+import { Flex, Text } from '@pancakeswap/uikit'
+import axios from 'axios'
 import Column from 'components/Column'
+import { utils } from 'ethers'
+import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import styled from 'styled-components'
 import { isAddress } from 'utils'
 import { AppState } from '../../../state'
 
@@ -49,7 +48,8 @@ const StyledWrapper = styled.div`
     &:first-child {
       width: 100%;
     }
-    & > div, & > div > div > div {
+    & > div,
+    & > div > div > div {
       &:first-child {
         color: white;
         font-size: 14px;
@@ -58,17 +58,17 @@ const StyledWrapper = styled.div`
         margin-bottom: 2px;
       }
       &:last-child {
-        color: #ADB5BD;
+        color: #adb5bd;
         font-weight: bold;
         font-size: 14px;
         line-height: 16px;
       }
     }
     & .success {
-      color: #00AC1C;
+      color: #00ac1c;
     }
     & .error {
-      color: #EA3943;
+      color: #ea3943;
     }
     & h2 {
       font-size: 14px;
@@ -86,7 +86,7 @@ const StyledWrapper = styled.div`
     & > div {
       &:first-child {
         min-width: 192px;
-      }  
+      }
     }
   }
 `
@@ -94,70 +94,71 @@ const StyledWrapper = styled.div`
 export default function CoinStatsBoard() {
   // const theme = useContext(ThemeContext)
 
-  const input = useSelector<AppState, AppState['inputReducer']>((state) => state.inputReducer.input);
+  const input = useSelector<AppState, AppState['inputReducer']>((state) => state.inputReducer.input)
   const result = isAddress(input)
-  
+
   const [alldata, setalldata] = useState({
-    address : '',
-    price : '',
-    change : '',
-    volume : '',
-    liquidityV2 : '',
-    liquidityV2BNB:''
-  });
+    address: '',
+    price: '',
+    change: '',
+    volume: '',
+    liquidityV2: '',
+    liquidityV2BNB: '',
+  })
 
   const [tokenData, setTokenData] = useState<any>(null)
 
-  const [linkIcon, setLinkIcon] = useState('https://r.poocoin.app/smartchain/assets/0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82/logo.png')
+  const [linkIcon, setLinkIcon] = useState(
+    'https://r.poocoin.app/smartchain/assets/0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82/logo.png',
+  )
   // const pricedecimal=parseFloat(alldata.price).toFixed(5);
-  const changedecimal:any=parseFloat(alldata.change).toFixed(3);
+  const changedecimal: any = parseFloat(alldata.change).toFixed(3)
   // const set=Math.sign(changedecimal);
-  const volumedecimal=parseFloat(alldata.volume).toFixed(3);
-  const liquidityV2decimal=parseFloat(alldata.liquidityV2).toFixed(3);
-  const liquidityV2BNBdecimal=parseFloat(alldata.liquidityV2BNB).toFixed(3);
+  const volumedecimal = parseFloat(alldata.volume).toFixed(3)
+  const liquidityV2decimal = parseFloat(alldata.liquidityV2).toFixed(3)
+  const liquidityV2BNBdecimal = parseFloat(alldata.liquidityV2BNB).toFixed(3)
 
   const getTableData = () => {
-    try{
+    try {
       if (result) {
-        axios.post("https://thesphynx.co/api/tokenStats",{address:input})
-          .then((response) => {
-          
-            setTokenData(response.data)
-          });
-        axios.post("https://thesphynx.co/api/chartStats",{address:input})
-          .then((response) => {
-            setalldata(response.data)
-            setLinkIcon(`https://r.poocoin.app/smartchain/assets/${input ? utils.getAddress(input) : '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82'}/logo.png`);
-          });
+        axios.post('https://thesphynx.co/api/tokenStats', { address: input }).then((response) => {
+          setTokenData(response.data)
+        })
+        axios.post('https://thesphynx.co/api/chartStats', { address: input }).then((response) => {
+          setalldata(response.data)
+          setLinkIcon(
+            `https://r.poocoin.app/smartchain/assets/${
+              input ? utils.getAddress(input) : '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82'
+            }/logo.png`,
+          )
+        })
       }
-    }
-    catch(err){
+    } catch (err) {
       // eslint-disable-next-line no-console
       console.log(err)
     }
   }
   useEffect(() => {
-    getTableData();
+    getTableData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[input])
+  }, [input])
 
   return (
     <Container>
       <StyledWrapper>
         <Column>
           <Flex>
-          {/* { */}
-          {/* tokenInfo ? */}
-          <IconWrapper size={32}>
-            <img src={linkIcon} alt="Coin icon" />
-          </IconWrapper>
-          {
-            tokenData &&
-            <Flex flexDirection='column' justifyContent='center'>
-              <Text>{tokenData.symbol}</Text>
-              <Text>$ {Number(tokenData.marketCap).toLocaleString()}</Text>
-            </Flex>
-          }
+            {/* { */}
+            {/* tokenInfo ? */}
+            <IconWrapper size={32}>
+              <img src={linkIcon} alt="Coin icon" />
+            </IconWrapper>
+            {tokenData && (
+              <Flex flexDirection="column" justifyContent="center">
+                <Text>{tokenData.symbol}</Text>
+                <Text>$ {Number(tokenData.marketCap).toLocaleString()}</Text>
+              </Flex>
+            )}
           </Flex>
         </Column>
         <Column>
@@ -167,7 +168,9 @@ export default function CoinStatsBoard() {
         </Column>
         <Column>
           <Text>24h Change</Text>
-          <Text><h2 className={Math.sign(changedecimal)===-1 ? 'error':'success'}> {changedecimal }%</h2></Text>
+          <Text>
+            <h2 className={Math.sign(changedecimal) === -1 ? 'error' : 'success'}> {changedecimal}%</h2>
+          </Text>
           {/* <Text>{changedecimal}%</Text> */}
         </Column>
         <Column>
@@ -177,7 +180,10 @@ export default function CoinStatsBoard() {
         <Column style={{ margin: '0 0 8px 0' }}>
           <Text>Liquidity</Text>
           {/* <Text>{Number(liquidityV2BNBdecimal).toLocaleString()} BNB<span className='success'> (${Number(liquidityV2decimal).toLocaleString()})</span></Text> */}
-          <Text>{Number(liquidityV2BNBdecimal).toLocaleString()} BNB<span className='success'> (${Number(liquidityV2decimal).toLocaleString()})</span></Text>
+          <Text>
+            {Number(liquidityV2BNBdecimal).toLocaleString()} BNB
+            <span className="success"> (${Number(liquidityV2decimal).toLocaleString()})</span>
+          </Text>
         </Column>
       </StyledWrapper>
     </Container>

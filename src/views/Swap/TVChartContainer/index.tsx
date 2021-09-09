@@ -1,21 +1,21 @@
 /* eslint-disable */
-import * as React from 'react'
-import styled from 'styled-components'
-import TransactionNav from 'components/TransactionNav'
-import './index.css'
-import {
-  widget,
-  ChartingLibraryWidgetOptions,
-  LanguageCode,
-  IChartingLibraryWidget,
-  ResolutionString,
-} from '../../../charting_library'
-import axios from 'axios'
-import { makeApiRequest, generateSymbol, makeApiRequest1 } from './helpers'
-import { useSelector } from 'react-redux'
 import { ReactComponent as UpDownArrow } from 'assets/svg/icon/UpDownArrow.svg'
-import { AppDispatch, AppState } from '../../../state'
+import axios from 'axios'
+import TransactionNav from 'components/TransactionNav'
+import * as React from 'react'
+import { useSelector } from 'react-redux'
+import styled from 'styled-components'
+import {
+  ChartingLibraryWidgetOptions,
+  IChartingLibraryWidget,
+  LanguageCode,
+  ResolutionString,
+  widget,
+} from '../../../charting_library'
+import { AppState } from '../../../state'
 import { isAddress } from '../../../utils'
+import { makeApiRequest1 } from './helpers'
+import './index.css'
 
 const UpDownArrowBox = styled.div`
   width: 100%;
@@ -49,7 +49,7 @@ const TransactionNavWrapper = styled.div`
   }
 `
 
-const ChartContainer = styled.div<{ height: number }> `
+const ChartContainer = styled.div<{ height: number }>`
   position: relative;
   height: ${(props) => props.height}px;
 `
@@ -98,8 +98,8 @@ export const TVChartContainer: React.FC<Partial<ChartContainerProps>> = () => {
   const routerVersion = useSelector<AppState, AppState['inputReducer']>((state) => state.inputReducer.routerVersion)
   const result = isAddress(input)
   const draggableArrow = React.useRef<any>(null)
-  const [ chartHeight, setChartHeight ] = React.useState(550)
-  const [ dragPos, setDragPos ] = React.useState(0)
+  const [chartHeight, setChartHeight] = React.useState(550)
+  const [dragPos, setDragPos] = React.useState(0)
 
   const [tokendetails, setTokenDetails] = React.useState({
     name: 'PancakeSwap Token',
@@ -368,7 +368,12 @@ export const TVChartContainer: React.FC<Partial<ChartContainerProps>> = () => {
       </ChartContainer>
       {/* <div style={{ height: '10px' }}>&nbsp;</div> */}
       <UpDownArrowBox>
-        <ArrowWrapper ref={draggableArrow} draggable='true' onDragStart={e => handleDragStart(e)} onDragOver={e => handleDrag(e)}>
+        <ArrowWrapper
+          ref={draggableArrow}
+          draggable="true"
+          onDragStart={(e) => handleDragStart(e)}
+          onDragOver={(e) => handleDrag(e)}
+        >
           <UpDownArrow />
         </ArrowWrapper>
         <TransactionNavWrapper>
