@@ -1,19 +1,18 @@
 /* eslint-disable no-script-url */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable no-console */
-import React,{useState,useCallback} from 'react'
+import axios from 'axios'
+import React, { useCallback, useState } from 'react'
+import Marquee from 'react-fast-marquee'
+import ReactLoading from 'react-loading'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { Link } from '@pancakeswap/uikit'
-import Marquee from "react-fast-marquee";
-import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
-import ReactLoading from 'react-loading';
+import { AppState } from '../../../state'
+import { setIsInput } from '../../../state/input/actions'
 // import { ReactComponent as HelpIcon } from 'assets/svg/icon/HelpIcon.svg'
 // import { ReactComponent as DownRedArrowIcon} from 'assets/svg/icon/DownRedArrowIcon.svg'
 // import { ReactComponent as UpGreenArrowIcon} from 'assets/svg/icon/UpGreenArrowIcon.svg'
 import { HotTokenType } from './types'
-import { AppState } from '../../../state'
-import { setIsInput } from '../../../state/input/actions'
 
 export interface HotTokenBarProps {
   tokens?: HotTokenType[] | null
@@ -23,13 +22,13 @@ const StyledBar = styled.div`
   width: 100%;
   display: flex;
   & span {
-    font-family: 'Roboto Regular'
+    font-family: 'Roboto Regular';
   }
 `
 
 const FlowBar = styled.div`
   width: calc(100% - 100px);
-  background-color: rgba(0,0,0,0.2);
+  background-color: rgba(0, 0, 0, 0.2);
   border-radius: 0px 12px 12px 0px;
   padding: 6px;
 `
@@ -90,21 +89,23 @@ const BarIntro = styled.div`
 // `
 
 export default function HotTokenBar() {
-  const [data,setData]=React.useState([{
-    currency:{
-      symbol:'',
-      name:''
-    }
-  }])
- const [loader,setLoader]=useState(false)
+  const [data, setData] = React.useState([
+    {
+      currency: {
+        symbol: '',
+        name: '',
+      },
+    },
+  ])
+  const [loader, setLoader] = useState(false)
   const input = useSelector<AppState, AppState['inputReducer']>((state) => state.inputReducer.input)
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
 
-  const date:any = new Date();
-  date.setDate(date.getDate() - 2);
-  console.log("data in hotbar==================================",data)
-  const d:any = new Date()
-  d.setDate(d.getDate() - 2);
+  const date: any = new Date()
+  date.setDate(date.getDate() - 2)
+  // console.log("data in hotbar==================================",data)
+  const d: any = new Date()
+  d.setDate(d.getDate() - 2)
   const getDataQuery = `
   {
     ethereum(network: bsc) {
@@ -131,76 +132,85 @@ export default function HotTokenBar() {
     
   }`
 
-  const handleClick = useCallback(async() => {
-  
-      setLoader(true);
-      const queryResult = await axios.post('https://graphql.bitquery.io/', { query: getDataQuery });
-      // setData(queryResult);
-      if (queryResult.data.data){
+  const handleClick = useCallback(async () => {
+    setLoader(true)
+    const queryResult = await axios.post('https://graphql.bitquery.io/', { query: getDataQuery })
+    // setData(queryResult);
+    if (queryResult.data.data) {
       setData(queryResult.data.data.ethereum.transfers)
-      setLoader(false);
-      }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-    
+      setLoader(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   //  const fetchData = async () => {
   //    try {
   //        setLoader(true);
   //        const queryResult = await axios.post('https://graphql.bitquery.io/', { query: getDataQuery });
-     
+
   //        if (queryResult.data.data){
   //        setData(queryResult.data.data.ethereum.transfers)
   //        setLoader(false);
   //    }
   //  }
   //    catch (err) {
-     
- 
+
   //    }
   //  }
-   // console.log("data in hotbar==================================",data)
-  React.useEffect(()=>{
+  // console.log("data in hotbar==================================",data)
+  React.useEffect(() => {
     handleClick()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
- return (
-   <>
-   <StyledBar>
-     <BarIntro><span>Top Pairs</span></BarIntro>
-    
-     <FlowBar>
-     {loader?<div style={{display: 'flex', justifyContent: 'center'}}>
-     <ReactLoading type="spin" color="green" height='2%' width='2%'  />
-     </div>:
-       <Marquee gradient={false} speed={40} className="marquee-container" style={{ overflow: 'hidden !important' }}>
-     
-         <ul style={{ display: 'flex', listStyle: 'none', justifyContent: 'center' }}>
-            {
-            data.map((elem:any,index) => {
-             return (
-               <li key={`${index+1}.${elem.currency.symbol}`} style={{color:'white',padding:'12'}}>
-               <a href={`#/swap/${elem.currency.address}`} style={{marginRight: 20, textDecoration:'none'}} onClick={() => { dispatch(setIsInput({ isInput: true })) }}>{`${index+1}. ${elem.currency.symbol}`}</a>
-                 {/* < a href="##">{elem.currency.name}</a> */}
-                 {/* <HotToken
+  return (
+    <>
+      <StyledBar>
+        <BarIntro>
+          <span>Top Pairs</span>
+        </BarIntro>
+
+        <FlowBar>
+          {loader ? (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <ReactLoading type="spin" color="green" height="2%" width="2%" />
+            </div>
+          ) : (
+            <Marquee
+              gradient={false}
+              speed={40}
+              className="marquee-container"
+              style={{ overflow: 'hidden !important' }}
+            >
+              <ul style={{ display: 'flex', listStyle: 'none', justifyContent: 'center' }}>
+                {data.map((elem: any, index) => {
+                  return (
+                    <li key={`${index + 1}.${elem.currency.symbol}`} style={{ color: 'white', padding: '12' }}>
+                      <a
+                        href={`#/swap/${elem.currency.address}`}
+                        style={{ marginRight: 20, textDecoration: 'none' }}
+                        onClick={() => {
+                          dispatch(setIsInput({ isInput: true }))
+                        }}
+                      >{`${index + 1}. ${elem.currency.symbol}`}</a>
+                      {/* < a href="##">{elem.currency.name}</a> */}
+                      {/* <HotToken
                    index={key + 1}
                    // dexId={token.}
                    symbol={data.symbol}
                    name={data.name}
                    direction={data.direction}
                  /> */}
-               </li>
-             )
-           })
-          }
-         </ul>
+                    </li>
+                  )
+                })}
+              </ul>
+            </Marquee>
+          )}
+        </FlowBar>
 
-       </Marquee>
-     }
-     </FlowBar>
-   
-     <div className="paddingRight: 30px" />
-   </StyledBar>
-   </>
- )
+        <div className="paddingRight: 30px" />
+      </StyledBar>
+    </>
+  )
 }

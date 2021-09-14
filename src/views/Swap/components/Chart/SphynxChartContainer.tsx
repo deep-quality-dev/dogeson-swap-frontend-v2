@@ -1,23 +1,26 @@
 /* eslint-disable */
-import * as React from 'react'
-import styled from 'styled-components'
-import {
-  widget,
-  ChartingLibraryWidgetOptions,
-  LanguageCode,
-  IChartingLibraryWidget,
-  ResolutionString,
-} from 'charting_library/charting_library'
+import erc_20 from 'assets/abis/erc20.json'
 import axios from 'axios'
-import { useSelector } from 'react-redux'
-import { getUnixTime, startOfHour, Duration, sub } from 'date-fns'
-import { AppState } from 'state'
-import { PoolData } from 'state/info/types'
+import {
+  ChartingLibraryWidgetOptions,
+  IChartingLibraryWidget,
+  LanguageCode,
+  ResolutionString,
+  widget,
+} from 'charting_library/charting_library'
+import { PANCAKE_ROUTER_ADDRESS } from 'config/constants'
+import { Duration, getUnixTime, startOfHour, sub } from 'date-fns'
+import { ethers } from 'ethers'
+import * as React from 'react'
 import fetchTokenPriceData from 'state/info/queries/tokens/priceData'
-import { fetchPoolData } from 'state/info/queries/pools/poolData'
+import { getTokenPrice } from 'state/info/ws/priceData'
+import styled from 'styled-components'
 import { isAddress } from 'utils'
+import { simpleWebsocketProvider } from 'utils/providers'
+// import moment from 'moment'
+import Web3 from 'web3'
 
-const ChartContainer = styled.div<{ height: number }> `
+const ChartContainer = styled.div<{ height: number }>`
   position: relative;
   height: ${(props) => props.height}px;
 `
@@ -54,7 +57,7 @@ const ChartContainerProps = {
   fullscreen: false,
   autosize: true,
   studiesOverrides: {},
-  height: 600
+  height: 600,
 }
 
 function getLanguageFromURL(): LanguageCode | null {
@@ -64,16 +67,16 @@ function getLanguageFromURL(): LanguageCode | null {
 }
 
 const SphynxChartContainer: React.FC<Partial<ChartContainerProps>> = (props) => {
-
-  const input = useSelector<AppState, AppState['inputReducer']>((state) => state.inputReducer.input)
+  // const input = useSelector<AppState, AppState['inputReducer']>((state) => state.inputReducer.input)
   // const routerVersion = useSelector<AppState, AppState['inputReducer']>((state) => state.inputReducer.routerVersion)
+  const input = '0x3b39243e10f451a7acfcf9e02c6a37303b61da46'
   const checksumAddress = isAddress(input)
 
   const [tokendetails, setTokenDetails] = React.useState({
     pair: ' ',
   })
 
-  const fetchPriceData = async(resolution) => {
+  const fetchPriceData = async (resolution) => {
     if (checksumAddress) {
       let interval = 3600 // one hour per seconds
       let duration: Duration = { weeks: 1 }
@@ -110,20 +113,97 @@ const SphynxChartContainer: React.FC<Partial<ChartContainerProps>> = (props) => 
       const utcCurrentTime = getUnixTime(new Date()) * 1000
       const startTimestamp = getUnixTime(startOfHour(sub(utcCurrentTime, duration)))
 
-      const { error: fetchError3, data:priceData } = await fetchTokenPriceData(
+      const { error: fetchError3, data: priceData } = await fetchTokenPriceData(
         checksumAddress.toLocaleLowerCase(),
         interval,
-        startTimestamp
+        startTimestamp,
       )
       return priceData
     }
     return []
   }
 
+  const provider = simpleWebsocketProvider
+  const latestPrice = getTokenPrice(input, provider)
+  provider.on('pending', async (tx) => {
+    const transaction = await provider.getTransaction(tx)
+    if (transaction !== null && parseInt(ethers.utils.formatUnits((transaction.value, 18))) > 0) {
+      if (transaction['to'].includes(PANCAKE_ROUTER_ADDRESS)) {
+        const tokenPrice = await getTokenPrice([input], provider)
+        // console.log(tokenPrice)
+      }
+    }
+  })
+
+  const parseData: any = async () => {
+    console.log('blockNumber', blocks)
+    console.log('transactions', transactions)
+    return new Promise((resolve) => {
+      for (let i = 0; i <= transactions.length; i++) {
+        if (i == transactions.length - 1) {
+          resolve(true)
+        }
+        web3.eth.getTransaction(transactions[i]).then(async (data) => {
+          if (data.to === pancakeV2) {
+            console.log(data)
+            let receipt = await web3.eth.getTransactionReceipt(data.hash)
+            let logs = receipt.logs.filter((data) => data.topics[0] === transferEventTopic)
+            // const price = await getPrice()
+            console.log('receipt', receipt)
+            console.log('Logs', logs)
+            // console.log('price', price)
+          }
+        })
+      }
+      transactions = []
+    })
+  }
+
+  const pancakeV2: any = '0x10ED43C718714eb63d5aA57B78B54704E256024E'
+
+  const transferEventTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+
+  const abi: any = erc_20
+
+  let blocks = 0
+
+  let transactions = []
+
+  const providerURL = 'wss://bsc-ws-node.nariox.org:443'
+  const web3 = new Web3(new Web3.providers.WebsocketProvider(providerURL))
+
+  const contract: any = new web3.eth.Contract(abi, input)
+  contract.events
+    .Transfer({}, async function (error, event) {
+      if (blocks < event.blockNumber && blocks !== 0) {
+        await parseData()
+        blocks = event.blockNumber
+        return
+      }
+      blocks = event.blockNumber
+      if (transactions.indexOf(event.transactionHash)) {
+        transactions.push(event.transactionHash)
+      }
+    })
+    .on('connected', function (subscriptionId) {
+      console.log(subscriptionId)
+    })
+    .on('data', function (event) {
+      console.log(event) // same results as the optional callback above
+    })
+    .on('changed', function (event) {
+      // remove event from local database
+    })
+    .on('error', function (error, receipt) {
+      // If the transaction was rejected by the network with a receipt, the second parameter will be the receipt.
+    })
+
   // const lastBarsCache = new Map()
 
+  // parseData()
+
   const configurationData = {
-    supported_resolutions: ['1', '5', '10', '15', '30', '1H', '1D', '1W', '1M']
+    supported_resolutions: ['1', '5', '10', '15', '30', '1H', '1D', '1W', '1M'],
   }
   async function getAllSymbols() {
     let allSymbols: any = []
@@ -251,7 +331,7 @@ const SphynxChartContainer: React.FC<Partial<ChartContainerProps>> = (props) => 
 
     tvWidget = await new widget(widgetOptions)
   }
-  
+
   React.useEffect(() => {
     getWidget()
   }, [])
